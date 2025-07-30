@@ -9,10 +9,10 @@ const Index = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-blue-600">Dashboard</h1>
             <p className="text-muted-foreground">Welcome back! Here's your business overview.</p>
           </div>
-          <Badge variant="outline" className="text-primary">
+          <Badge variant="outline" className="text-blue-600 border-blue-600">
             Live Data
           </Badge>
         </div>
@@ -27,7 +27,7 @@ const Index = () => {
             <CardContent>
               <div className="text-2xl font-bold">$12,345</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">+12.5%</span> from last month
+                <span className="text-blue-600">+12.5%</span> from last month
               </p>
             </CardContent>
           </Card>
@@ -53,7 +53,7 @@ const Index = () => {
             <CardContent>
               <div className="text-2xl font-bold">1,284</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">+18</span> new this week
+                <span className="text-blue-600">+18</span> new this week
               </p>
             </CardContent>
           </Card>
@@ -66,7 +66,7 @@ const Index = () => {
             <CardContent>
               <div className="text-2xl font-bold">156</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">+8.2%</span> vs last week
+                <span className="text-blue-600">+8.2%</span> vs last week
               </p>
             </CardContent>
           </Card>

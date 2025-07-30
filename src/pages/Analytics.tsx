@@ -43,7 +43,7 @@ const Analytics = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Analytics & Insights</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-blue-600">Analytics & Insights</h1>
             <p className="text-muted-foreground">Track performance and discover trends</p>
           </div>
           <div className="flex gap-2">
@@ -65,7 +65,7 @@ const Analytics = () => {
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{insight.title}</CardTitle>
                 <insight.icon className={`h-4 w-4 ${
-                  insight.trend === 'up' ? 'text-green-600' : 
+                  insight.trend === 'up' ? 'text-blue-600' : 
                   insight.trend === 'down' ? 'text-red-600' : 
                   'text-muted-foreground'
                 }`} />
@@ -151,17 +151,17 @@ const Analytics = () => {
               <div className="space-y-2">
                 <div className="text-sm font-medium">This Week</div>
                 <div className="text-2xl font-bold">$1,847.32</div>
-                <div className="text-sm text-green-600">+15.3% vs last week</div>
+                <div className="text-sm text-blue-600">+15.3% vs last week</div>
               </div>
               <div className="space-y-2">
                 <div className="text-sm font-medium">This Month</div>
                 <div className="text-2xl font-bold">$7,234.18</div>
-                <div className="text-sm text-green-600">+8.7% vs last month</div>
+                <div className="text-sm text-blue-600">+8.7% vs last month</div>
               </div>
               <div className="space-y-2">
                 <div className="text-sm font-medium">This Year</div>
                 <div className="text-2xl font-bold">$84,567.45</div>
-                <div className="text-sm text-green-600">+23.1% vs last year</div>
+                <div className="text-sm text-blue-600">+23.1% vs last year</div>
               </div>
             </div>
           </CardContent>

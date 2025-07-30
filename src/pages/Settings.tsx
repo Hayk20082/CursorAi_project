@@ -23,7 +23,7 @@ const Settings = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-blue-600">Settings</h1>
             <p className="text-muted-foreground">Manage your business configuration and preferences</p>
           </div>
         </div>
@@ -92,7 +92,7 @@ const Settings = () => {
                   </div>
                 </div>
 
-                <Button>Save Changes</Button>
+                <Button className="bg-blue-600 hover:bg-blue-700">Save Changes</Button>
               </CardContent>
             </Card>
 
@@ -112,7 +112,7 @@ const Settings = () => {
                     <Input id="taxId" defaultValue="12-3456789" />
                   </div>
                 </div>
-                <Button>Update Tax Settings</Button>
+                <Button className="bg-blue-600 hover:bg-blue-700">Update Tax Settings</Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -134,7 +134,7 @@ const Settings = () => {
                       <h4 className="font-medium">Team Members</h4>
                       <p className="text-sm text-muted-foreground">Invite and manage your staff</p>
                     </div>
-                    <Button>Invite Staff</Button>
+                    <Button className="bg-blue-600 hover:bg-blue-700">Invite Staff</Button>
                   </div>
 
                   <div className="space-y-3">
@@ -216,7 +216,7 @@ const Settings = () => {
                       <div className="font-medium">Stripe Integration</div>
                       <div className="text-sm text-muted-foreground">Accept credit and debit cards</div>
                     </div>
-                    <Badge variant="outline" className="text-green-600">Connected</Badge>
+                    <Badge variant="outline" className="text-blue-600">Connected</Badge>
                   </div>
 
                   <Separator />
@@ -236,7 +236,7 @@ const Settings = () => {
                     <Label htmlFor="testMode">Test Mode</Label>
                   </div>
 
-                  <Button>Update Payment Settings</Button>
+                  <Button className="bg-blue-600 hover:bg-blue-700">Update Payment Settings</Button>
                 </div>
               </CardContent>
             </Card>
@@ -317,7 +317,7 @@ const Settings = () => {
                       <div className="text-sm text-muted-foreground">File storage and backups</div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-green-600">Connected</Badge>
+                      <Badge variant="outline" className="text-blue-600">Connected</Badge>
                       <Button variant="ghost" size="sm">Configure</Button>
                     </div>
                   </div>
@@ -339,7 +339,7 @@ const Settings = () => {
                       <div className="text-sm text-muted-foreground">User authentication and management</div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-green-600">Connected</Badge>
+                      <Badge variant="outline" className="text-blue-600">Connected</Badge>
                       <Button variant="ghost" size="sm">Configure</Button>
                     </div>
                   </div>
@@ -395,7 +395,7 @@ const Settings = () => {
                   </div>
                 </div>
 
-                <Button>Update Security Settings</Button>
+                <Button className="bg-blue-600 hover:bg-blue-700">Update Security Settings</Button>
               </CardContent>
             </Card>
           </TabsContent>
