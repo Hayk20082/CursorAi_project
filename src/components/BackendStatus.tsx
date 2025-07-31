@@ -31,7 +31,7 @@ const BackendStatus = () => {
       <Alert variant="destructive" className="mb-4">
         <XCircle className="h-4 w-4" />
         <AlertDescription>
-          Backend server is not accessible. Please ensure the backend is running on port 5000.
+          Backend server is not accessible. Please check if the deployed backend is running.
         </AlertDescription>
       </Alert>
     );

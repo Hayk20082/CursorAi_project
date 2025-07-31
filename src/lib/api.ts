@@ -1,4 +1,5 @@
-const API_BASE_URL = 'https://cursorai-project.onrender.com/api';
+// Use environment variable for API URL, fallback to deployed backend
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cursorai-project.onrender.com/api';
 
 interface ApiResponse<T = any> {
   data?: T;
@@ -33,6 +34,8 @@ async function apiRequest<T = any>(
 
   try {
     console.log(`Making API request to: ${url}`);
+    console.log('API Base URL:', API_BASE_URL);
+    console.log('Environment:', import.meta.env.MODE);
     console.log('Request options:', defaultOptions);
     
     const response = await fetch(url, defaultOptions);
@@ -68,7 +71,7 @@ async function apiRequest<T = any>(
     
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
       console.error('Network error details:', error);
-      throw new ApiError('Unable to connect to the server. Please check if the backend is running.');
+      throw new ApiError('Unable to connect to the deployed backend. Please check if the backend is running at https://cursorai-project.onrender.com');
     }
     
     throw new ApiError('Network error occurred');
