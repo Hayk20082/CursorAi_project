@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartOps Backend API</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .status {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .endpoints {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        .endpoint {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #0ea5e9;
+        }
+        .method {
+            font-weight: bold;
+            color: #0ea5e9;
+        }
+        .url {
+            font-family: monospace;
+            background: #f1f5f9;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+        }
+        .description {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        .frontend-link {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f0fdf4;
+            border: 1px solid #22c55e;
+            border-radius: 8px;
+        }
+        .frontend-link a {
+            color: #22c55e;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .frontend-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 SmartOps Backend API</h1>
+        <p>This is the backend API server for the SmartOps business management platform.</p>
+    </div>
+
+    <div class="status">
+        <h2>✅ Status: Running</h2>
+        <p>The API server is up and running. All endpoints are available for the frontend application.</p>
+    </div>
+
+    <div class="endpoints">
+        <h2>📋 Available Endpoints</h2>
+        
+        <div class="endpoint">
+            <div><span class="method">GET</span> <span class="url">/api/health</span></div>
+            <div class="description">Health check endpoint to verify API status</div>
+        </div>
+
+        <div class="endpoint">
+            <div><span class="method">POST</span> <span class="url">/api/auth/register</span></div>
+            <div class="description">Register a new user and business</div>
+        </div>
+
+        <div class="endpoint">
+            <div><span class="method">POST</span> <span class="url">/api/auth/login</span></div>
+            <div class="description">Authenticate user and get access token</div>
+        </div>
+
+        <div class="endpoint">
+            <div><span class="method">GET</span> <span class="url">/api/auth/profile</span></div>
+            <div class="description">Get current user profile (requires authentication)</div>
+        </div>
+
+        <div class="endpoint">
+            <div><span class="method">GET</span> <span class="url">/api/users</span></div>
+            <div class="description">Get all users (requires authentication)</div>
+        </div>
+
+        <div class="endpoint">
+            <div><span class="method">GET</span> <span class="url">/api/business</span></div>
+            <div class="description">Get business information (requires authentication)</div>
+        </div>
+
+        <div class="endpoint">
+            <div><span class="method">GET</span> <span class="url">/api/inventory</span></div>
+            <div class="description">Get inventory items (requires authentication)</div>
+        </div>
+
+        <div class="endpoint">
+            <div><span class="method">GET</span> <span class="url">/api/sales</span></div>
+            <div class="description">Get sales data (requires authentication)</div>
+        </div>
+
+        <div class="endpoint">
+            <div><span class="method">GET</span> <span class="url">/api/customers</span></div>
+            <div class="description">Get customer data (requires authentication)</div>
+        </div>
+    </div>
+
+    <div class="frontend-link">
+        <h3>🌐 Frontend Application</h3>
+        <p>To access the SmartOps frontend application, please visit:</p>
+        <p><a href="https://cursorai-project.onrender.com" target="_blank">https://cursorai-project.onrender.com</a></p>
+        <p><small>Note: The frontend and backend are deployed separately. This URL shows the backend API.</small></p>
+    </div>
+
+    <script>
+        // Add timestamp
+        document.addEventListener('DOMContentLoaded', function() {
+            const timestamp = new Date().toLocaleString();
+            const statusDiv = document.querySelector('.status');
+            statusDiv.innerHTML += `<p><small>Last updated: ${timestamp}</small></p>`;
+        });
+    </script>
+</body>
+</html> 

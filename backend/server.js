@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { sequelize } from './config/database.js';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
@@ -8,6 +10,9 @@ import businessRoutes from './routes/business.js';
 import inventoryRoutes from './routes/inventory.js';
 import salesRoutes from './routes/sales.js';
 import customerRoutes from './routes/customers.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load environment variables
 dotenv.config({ path: './config.env' });
@@ -32,6 +37,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -39,6 +47,30 @@ app.use('/api/business', businessRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/customers', customerRoutes);
+
+// Root endpoint - serve HTML page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// API info endpoint
+app.get('/api', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'SmartOps Backend API is running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      users: '/api/users',
+      business: '/api/business',
+      inventory: '/api/inventory',
+      sales: '/api/sales',
+      customers: '/api/customers'
+    },
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -60,7 +92,25 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+  res.status(404).json({ 
+    error: 'Route not found',
+    message: 'This is the SmartOps Backend API. Please use the correct endpoints.',
+    availableEndpoints: {
+      root: 'GET /',
+      health: 'GET /api/health',
+      auth: {
+        register: 'POST /api/auth/register',
+        login: 'POST /api/auth/login',
+        profile: 'GET /api/auth/profile'
+      },
+      users: 'GET /api/users',
+      business: 'GET /api/business',
+      inventory: 'GET /api/inventory',
+      sales: 'GET /api/sales',
+      customers: 'GET /api/customers'
+    },
+    requestedPath: req.originalUrl
+  });
 });
 
 // Start server
