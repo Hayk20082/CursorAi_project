@@ -16,7 +16,7 @@ const ConnectionTest = () => {
       console.log('Testing connection to backend...');
       
       // Test health endpoint
-      const healthResponse = await fetch('http://localhost:5000/api/health');
+      const healthResponse = await fetch('https://cursorai-project.onrender.com/api/health');
       console.log('Health response status:', healthResponse.status);
       
       if (!healthResponse.ok) {
@@ -27,7 +27,7 @@ const ConnectionTest = () => {
       console.log('Health data:', healthData);
       
       // Test registration endpoint
-      const registerResponse = await fetch('http://localhost:5000/api/auth/register', {
+              const registerResponse = await fetch('https://cursorai-project.onrender.com/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -10,7 +10,7 @@ const SimpleTest = () => {
     try {
       console.log('Testing basic fetch...');
       
-      const response = await fetch('http://localhost:5000/api/health');
+      const response = await fetch('https://cursorai-project.onrender.com/api/health');
       console.log('Response:', response);
       
       if (response.ok) {

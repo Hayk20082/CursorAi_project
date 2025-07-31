@@ -9,7 +9,7 @@ const BackendStatus = () => {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/health');
+        const response = await fetch('https://cursorai-project.onrender.com/api/health');
         setIsOnline(response.ok);
       } catch (error) {
         console.error('Backend health check failed:', error);
