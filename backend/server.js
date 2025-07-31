@@ -22,23 +22,50 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:8080').split(',');
+console.log('Allowed CORS origins:', allowedOrigins);
+
 app.use(cors({
   origin: function (origin, callback) {
     // allow requests with no origin (like mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    if (!origin) {
+      console.log('Request with no origin - allowing');
+      return callback(null, true);
+    }
+    
+    console.log('Request origin:', origin);
+    console.log('Allowed origins:', allowedOrigins);
+    
+    // Check if origin is in allowed list or matches wildcard patterns
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (allowedOrigin.includes('*')) {
+        // Handle wildcard patterns like https://*.vercel.app
+        const pattern = allowedOrigin.replace('*', '.*');
+        const regex = new RegExp(pattern);
+        return regex.test(origin);
+      }
+      return allowedOrigin === origin;
+    });
+    
+    if (isAllowed) {
+      console.log('Origin allowed:', origin);
       return callback(null, true);
     } else {
-      return callback(new Error('Not allowed by CORS'));
+      console.log('Origin blocked:', origin);
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Handle preflight requests
+app.options('*', cors());
 
 // Routes
 app.use('/api/auth', authRoutes);
