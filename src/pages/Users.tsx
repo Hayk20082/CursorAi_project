@@ -7,79 +7,80 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Search, Mail, User, Shield, Eye, EyeOff } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { Plus, Search, Mail, Shield, User, X } from "lucide-react";
+import { useState } from "react";
 
-interface UserData {
+interface User {
   id: number;
+  name: string;
   email: string;
-  firstName: string;
-  lastName: string;
   role: string;
-  isActive: boolean;
-  lastLogin: string | null;
+  status: string;
+  lastLogin: string;
   createdAt: string;
 }
 
 const Users = () => {
   const breadcrumbs = [{ label: "Users" }];
-  const { toast } = useToast();
-  const { token } = useAuth();
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState<UserData[]>([]);
-  const [showPassword, setShowPassword] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [users, setUsers] = useState<User[]>([
+    {
+      id: 1,
+      name: "Admin User",
+      email: "admin@smartops.com",
+      role: "owner",
+      status: "active",
+      lastLogin: "2 hours ago",
+      createdAt: "2024-01-01"
+    },
+    {
+      id: 2,
+      name: "John Manager",
+      email: "john@smartops.com",
+      role: "manager",
+      status: "active",
+      lastLogin: "1 day ago",
+      createdAt: "2024-01-15"
+    },
+    {
+      id: 3,
+      name: "Jane Cashier",
+      email: "jane@smartops.com",
+      role: "cashier",
+      status: "active",
+      lastLogin: "3 hours ago",
+      createdAt: "2024-01-20"
+    }
+  ]);
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
-    password: "",
-    role: ""
+    role: "",
+    password: ""
   });
 
-  // Load users from backend
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/api/users", {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-    }
-  };
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.role.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "owner":
-        return <Badge className="bg-blue-100 text-blue-800">Owner</Badge>;
-      case "manager":
-        return <Badge className="bg-green-100 text-green-800">Manager</Badge>;
-      case "cashier":
-        return <Badge className="bg-purple-100 text-purple-800">Cashier</Badge>;
-      default:
-        return <Badge variant="outline">{role}</Badge>;
-    }
+    const colors = {
+      owner: "bg-purple-100 text-purple-800",
+      manager: "bg-blue-100 text-blue-800",
+      cashier: "bg-green-100 text-green-800",
+    };
+    return <Badge className={colors[role as keyof typeof colors] || "bg-gray-100 text-gray-800"}>{role}</Badge>;
   };
 
-  const getStatusBadge = (isActive: boolean) => {
-    return isActive ? (
-      <Badge variant="outline" className="text-blue-600">Active</Badge>
-    ) : (
-      <Badge variant="secondary">Inactive</Badge>
-    );
+  const getStatusBadge = (status: string) => {
+    if (status === "active") {
+      return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+    }
+    return <Badge variant="secondary">Inactive</Badge>;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,10 +91,10 @@ const Users = () => {
     }));
   };
 
-  const handleSelectChange = (value: string) => {
+  const handleSelectChange = (name: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      role: value
+      [name]: value
     }));
   };
 
@@ -101,54 +102,46 @@ const Users = () => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const response = await fetch("http://localhost:5000/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+    // Simulate API call
+    setTimeout(() => {
+      const newUser: User = {
+        id: users.length + 1,
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        status: "active",
+        lastLogin: "Never",
+        createdAt: new Date().toISOString().split('T')[0]
+      };
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to add user");
-      }
-
-      const newUser = await response.json();
-      
-      toast({
-        title: "Success",
-        description: "User added successfully!",
-      });
-
-      // Refresh users list to show the new user
-      await fetchUsers();
-
-      // Reset form
+      setUsers(prev => [...prev, newUser]);
       setFormData({
-        firstName: "",
-        lastName: "",
+        name: "",
         email: "",
-        password: "",
-        role: ""
+        role: "",
+        password: ""
       });
-
       setIsAddUserOpen(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add user",
-        variant: "destructive"
-      });
-    } finally {
       setLoading(false);
-    }
+    }, 1000);
   };
 
-  const activeUsers = users.filter(u => u.isActive);
-  const pendingUsers = users.filter(u => !u.isActive);
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
+
+  const activeUsers = users.filter(u => u.status === "active");
+  const managers = users.filter(u => u.role === "manager");
+  const cashiers = users.filter(u => u.role === "cashier");
+  const newThisMonth = users.filter(u => {
+    const createdDate = new Date(u.createdAt);
+    const now = new Date();
+    return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear();
+  }).length;
 
   return (
     <DashboardLayout breadcrumbs={breadcrumbs}>
@@ -161,7 +154,7 @@ const Users = () => {
           <div className="flex gap-2">
             <Button variant="outline">
               <Mail className="h-4 w-4 mr-2" />
-              Invite User
+              Invite Users
             </Button>
             <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
               <DialogTrigger asChild>
@@ -174,87 +167,60 @@ const Users = () => {
                 <DialogHeader>
                   <DialogTitle>Add New User</DialogTitle>
                   <DialogDescription>
-                    Add a new team member to your business. They will receive an email invitation.
+                    Create a new user account with appropriate permissions.
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name *</Label>
-                      <Input
-                        id="firstName"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        placeholder="Enter first name"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name *</Label>
-                      <Input
-                        id="lastName"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        placeholder="Enter last name"
-                        required
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="Enter full name"
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email Address *</Label>
+                    <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
                       name="email"
                       type="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      placeholder="user@business.com"
+                      placeholder="user@example.com"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password *</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        placeholder="Enter password"
-                        required
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Role *</Label>
-                    <Select value={formData.role} onValueChange={handleSelectChange}>
+                    <Label htmlFor="role">Role</Label>
+                    <Select value={formData.role} onValueChange={(value) => handleSelectChange("role", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="owner">Owner</SelectItem>
                         <SelectItem value="manager">Manager</SelectItem>
                         <SelectItem value="cashier">Cashier</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      placeholder="Enter password"
+                      required
+                    />
                   </div>
 
                   <DialogFooter>
@@ -272,7 +238,7 @@ const Users = () => {
         </div>
 
         {/* User Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -281,7 +247,7 @@ const Users = () => {
             <CardContent>
               <div className="text-2xl font-bold">{users.length}</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-blue-600">+{users.length}</span> total users
+                <span className="text-blue-600">+{newThisMonth}</span> new this month
               </p>
             </CardContent>
           </Card>
@@ -289,40 +255,71 @@ const Users = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
+              <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{activeUsers.length}</div>
               <p className="text-xs text-muted-foreground">
-                {activeUsers.length > 0 ? Math.round((activeUsers.length / users.length) * 100) : 0}% of total users
+                <span className="text-green-600">+{activeUsers.length}</span> active accounts
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Invites</CardTitle>
-              <Mail className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Managers</CardTitle>
+              <Shield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{pendingUsers.length}</div>
+              <div className="text-2xl font-bold">{managers.length}</div>
               <p className="text-xs text-muted-foreground">
-                Awaiting confirmation
+                <span className="text-blue-600">+{managers.length}</span> management roles
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Cashiers</CardTitle>
+              <User className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{cashiers.length}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-green-600">+{cashiers.length}</span> sales staff
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* User List */}
+        {/* Users List */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Team Members ({users.length})</CardTitle>
-                <CardDescription>Manage user access and permissions</CardDescription>
+                <CardTitle>Users ({filteredUsers.length})</CardTitle>
+                <CardDescription>Manage your team members and their access</CardDescription>
               </div>
               <div className="flex gap-2">
-                <Input placeholder="Search users..." className="w-64" />
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search users..." 
+                    className="w-64 pl-8 pr-8"
+                    value={searchQuery}
+                    onChange={handleSearch}
+                  />
+                  {searchQuery && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-2"
+                      onClick={clearSearch}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
                 <Button variant="outline">
                   <Search className="h-4 w-4" />
                 </Button>
@@ -331,21 +328,19 @@ const Users = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {users.length > 0 ? (
-                users.map((user) => (
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => (
                   <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-4">
                       <Avatar>
                         <AvatarFallback>
-                          {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                          {user.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{user.firstName} {user.lastName}</div>
+                        <div className="font-medium">{user.name}</div>
                         <div className="text-sm text-muted-foreground">{user.email}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Last login: {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
-                        </div>
+                        <div className="text-sm text-muted-foreground">Last login: {user.lastLogin}</div>
                       </div>
                     </div>
 
@@ -354,71 +349,25 @@ const Users = () => {
                         <div className="text-sm font-medium">{user.role}</div>
                         <div className="text-xs text-muted-foreground">Role</div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{user.isActive ? 'Active' : 'Inactive'}</div>
-                        <div className="text-xs text-muted-foreground">Status</div>
-                      </div>
                       <div className="flex items-center gap-2">
                         {getRoleBadge(user.role)}
-                        {getStatusBadge(user.isActive)}
+                        {getStatusBadge(user.status)}
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="ghost" size="sm">Edit</Button>
-                        <Button variant="ghost" size="sm">Permissions</Button>
+                        <Button variant="ghost" size="sm">View</Button>
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  No users found. Add your first team member above.
+                  {searchQuery ? "No users found matching your search." : "No users in the system."}
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
-
-        {/* Role Permissions */}
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Owner</CardTitle>
-              <CardDescription>Full system access</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-sm">• Full system access</div>
-              <div className="text-sm">• Manage staff</div>
-              <div className="text-sm">• Financial reports</div>
-              <div className="text-sm">• Settings configuration</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Manager</CardTitle>
-              <CardDescription>Business operations</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-sm">• Inventory management</div>
-              <div className="text-sm">• Sales reports</div>
-              <div className="text-sm">• Customer management</div>
-              <div className="text-sm">• Price adjustments</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Cashier</CardTitle>
-              <CardDescription>Point of sale</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-sm">• Process sales</div>
-              <div className="text-sm">• View inventory</div>
-              <div className="text-sm">• Customer lookup</div>
-              <div className="text-sm">• Basic reports</div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </DashboardLayout>
   );

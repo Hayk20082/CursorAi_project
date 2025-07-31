@@ -6,27 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FileText, Download, Calendar, Filter, Mail, Plus } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-
-interface Report {
-  id: number;
-  name: string;
-  type: string;
-  dateRange: string;
-  format: string;
-  status: string;
-  createdAt: string;
-}
+import { useState } from "react";
 
 const Reports = () => {
   const breadcrumbs = [{ label: "Reports" }];
-  const { toast } = useToast();
-  const { token } = useAuth();
   const [isCreateReportOpen, setIsCreateReportOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [reports, setReports] = useState<Report[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     type: "",
@@ -97,49 +82,21 @@ const Reports = () => {
     },
   ];
 
-  // Load reports from backend
-  useEffect(() => {
-    fetchReports();
-  }, []);
-
-  const fetchReports = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/api/reports", {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setReports(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch reports:", error);
-    }
-  };
-
   const getCategoryBadge = (category: string) => {
-    switch (category) {
-      case "Sales":
-        return <Badge className="bg-blue-100 text-blue-800">Sales</Badge>;
-      case "Inventory":
-        return <Badge className="bg-blue-100 text-blue-800">Inventory</Badge>;
-      case "Customers":
-        return <Badge className="bg-blue-100 text-blue-800">Customers</Badge>;
-      case "Financial":
-        return <Badge className="bg-blue-100 text-blue-800">Financial</Badge>;
-      default:
-        return <Badge variant="outline">{category}</Badge>;
-    }
+    const colors = {
+      Sales: "bg-blue-100 text-blue-800",
+      Inventory: "bg-green-100 text-green-800",
+      Customers: "bg-purple-100 text-purple-800",
+      Financial: "bg-orange-100 text-orange-800",
+    };
+    return <Badge className={colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800"}>{category}</Badge>;
   };
 
   const getStatusBadge = (status: string) => {
-    return status === "Active" ? (
-      <Badge variant="outline" className="text-blue-600">Active</Badge>
-    ) : (
-      <Badge variant="secondary">Inactive</Badge>
-    );
+    if (status === "Active") {
+      return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+    }
+    return <Badge variant="secondary">Inactive</Badge>;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,49 +118,17 @@ const Reports = () => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const response = await fetch("http://localhost:5000/api/reports", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to create report");
-      }
-
-      const newReport = await response.json();
-      
-      toast({
-        title: "Success",
-        description: "Report created successfully!",
-      });
-
-      // Refresh reports list
-      await fetchReports();
-
-      // Reset form
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      setIsCreateReportOpen(false);
       setFormData({
         name: "",
         type: "",
         dateRange: "",
         format: "pdf"
       });
-
-      setIsCreateReportOpen(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create report",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+    }, 1000);
   };
 
   return (
@@ -230,25 +155,25 @@ const Reports = () => {
                 <DialogHeader>
                   <DialogTitle>Create New Report</DialogTitle>
                   <DialogDescription>
-                    Generate a new report with your specified parameters.
+                    Generate a custom report with your specifications.
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Report Name *</Label>
+                    <Label htmlFor="name">Report Name</Label>
                     <input
                       id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
                       placeholder="Enter report name"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="w-full px-3 py-2 border rounded-md"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="type">Report Type *</Label>
+                    <Label htmlFor="type">Report Type</Label>
                     <Select value={formData.type} onValueChange={(value) => handleSelectChange("type", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select report type" />
@@ -258,27 +183,22 @@ const Reports = () => {
                         <SelectItem value="inventory">Inventory Report</SelectItem>
                         <SelectItem value="customers">Customer Report</SelectItem>
                         <SelectItem value="financial">Financial Report</SelectItem>
-                        <SelectItem value="analytics">Analytics Report</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="dateRange">Date Range *</Label>
+                    <Label htmlFor="dateRange">Date Range</Label>
                     <Select value={formData.dateRange} onValueChange={(value) => handleSelectChange("dateRange", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select date range" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="today">Today</SelectItem>
-                        <SelectItem value="yesterday">Yesterday</SelectItem>
-                        <SelectItem value="this_week">This Week</SelectItem>
-                        <SelectItem value="last_week">Last Week</SelectItem>
-                        <SelectItem value="this_month">This Month</SelectItem>
-                        <SelectItem value="last_month">Last Month</SelectItem>
-                        <SelectItem value="this_quarter">This Quarter</SelectItem>
-                        <SelectItem value="this_year">This Year</SelectItem>
-                        <SelectItem value="custom">Custom Range</SelectItem>
+                        <SelectItem value="week">This Week</SelectItem>
+                        <SelectItem value="month">This Month</SelectItem>
+                        <SelectItem value="quarter">This Quarter</SelectItem>
+                        <SelectItem value="year">This Year</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -291,9 +211,8 @@ const Reports = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="pdf">PDF</SelectItem>
-                        <SelectItem value="csv">CSV</SelectItem>
                         <SelectItem value="excel">Excel</SelectItem>
-                        <SelectItem value="json">JSON</SelectItem>
+                        <SelectItem value="csv">CSV</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -316,21 +235,28 @@ const Reports = () => {
         <Card>
           <CardHeader>
             <CardTitle>Report Templates</CardTitle>
-            <CardDescription>Pre-configured report templates</CardDescription>
+            <CardDescription>Pre-configured reports for common business needs</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
               {reportTemplates.map((template) => (
-                <div key={template.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <div className="font-medium">{template.name}</div>
-                    <div className="text-sm text-muted-foreground">{template.description}</div>
-                    <div className="text-xs text-muted-foreground mt-1">Frequency: {template.frequency}</div>
+                <div key={template.id} className="p-4 border rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium">{template.name}</div>
+                      <div className="text-sm text-muted-foreground mt-1">{template.description}</div>
+                      <div className="flex items-center gap-2 mt-2">
+                        {getCategoryBadge(template.category)}
+                        {getStatusBadge(template.status)}
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {getCategoryBadge(template.category)}
-                    {getStatusBadge(template.status)}
-                    <Button variant="ghost" size="sm">Run</Button>
+                  <div className="flex items-center justify-between mt-3 text-sm text-muted-foreground">
+                    <span>Frequency: {template.frequency}</span>
+                    <span>Last run: {template.lastRun}</span>
                   </div>
                 </div>
               ))}
@@ -342,73 +268,29 @@ const Reports = () => {
         <Card>
           <CardHeader>
             <CardTitle>Recent Reports</CardTitle>
-            <CardDescription>Recently generated reports</CardDescription>
+            <CardDescription>Recently generated and downloaded reports</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {reports.length > 0 ? (
-                reports.map((report) => (
-                  <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="space-y-3">
+              {recentReports.map((report, index) => (
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <div className="font-medium">{report.name}</div>
-                      <div className="text-sm text-muted-foreground">Type: {report.type}</div>
-                      <div className="text-sm text-muted-foreground">Date Range: {report.dateRange}</div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{report.format.toUpperCase()}</div>
-                        <div className="text-xs text-muted-foreground">Format</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{report.status}</div>
-                        <div className="text-xs text-muted-foreground">Status</div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">{report.status}</Badge>
-                        <Button variant="ghost" size="sm">
-                          <Download className="h-4 w-4" />
-                        </Button>
+                      <div className="text-sm text-muted-foreground">
+                        {report.type} • {report.size} • {report.date}
                       </div>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No reports generated yet. Create your first report above.
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Export Options */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Export Format Options</CardTitle>
-            <CardDescription>Choose your preferred export format</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <div className="font-medium">PDF Reports</div>
-                    <div className="text-sm text-muted-foreground">Professional formatted reports</div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{report.type}</Badge>
+                    <Button variant="ghost" size="sm">
+                      <Download className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">Export</Button>
-              </div>
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Download className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <div className="font-medium">CSV Data</div>
-                    <div className="text-sm text-muted-foreground">Raw data for analysis</div>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">Export</Button>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>

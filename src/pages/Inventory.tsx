@@ -4,103 +4,93 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Search, ScanLine, Upload, Download, X } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { Plus, Search, Package, TrendingUp, AlertTriangle, X } from "lucide-react";
+import { useState } from "react";
 
 interface Product {
   id: number;
   name: string;
-  sku: string;
-  description?: string;
+  category: string;
   price: number;
-  cost: number;
-  quantity: number;
-  reorderPoint: number;
-  category?: string;
-  barcode?: string;
-  soldCount: number;
-  createdAt: string;
-  updatedAt: string;
+  stock: number;
+  sku: string;
+  status: string;
+  lastUpdated: string;
 }
 
 const Inventory = () => {
   const breadcrumbs = [{ label: "Inventory" }];
-  const { toast } = useToast();
-  const { token } = useAuth();
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([
+    {
+      id: 1,
+      name: "Premium Coffee Beans",
+      category: "Beverages",
+      price: 24.99,
+      stock: 150,
+      sku: "COF-001",
+      status: "in-stock",
+      lastUpdated: "2024-01-15"
+    },
+    {
+      id: 2,
+      name: "Organic Tea Selection",
+      category: "Beverages",
+      price: 18.50,
+      stock: 75,
+      sku: "TEA-002",
+      status: "in-stock",
+      lastUpdated: "2024-01-14"
+    },
+    {
+      id: 3,
+      name: "Artisan Bread",
+      category: "Bakery",
+      price: 8.99,
+      stock: 25,
+      sku: "BRD-003",
+      status: "low-stock",
+      lastUpdated: "2024-01-15"
+    },
+    {
+      id: 4,
+      name: "Fresh Milk",
+      category: "Dairy",
+      price: 4.99,
+      stock: 0,
+      sku: "MLK-004",
+      status: "out-of-stock",
+      lastUpdated: "2024-01-13"
+    }
+  ]);
   const [formData, setFormData] = useState({
     name: "",
-    sku: "",
-    description: "",
-    price: "",
-    cost: "",
-    quantity: "",
-    reorderPoint: "",
     category: "",
-    barcode: ""
+    price: "",
+    stock: "",
+    sku: ""
   });
 
-  // Load products from backend
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.sku.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  // Filter products based on search query
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredProducts(products);
-    } else {
-      const filtered = products.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.barcode?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredProducts(filtered);
-    }
-  }, [searchQuery, products]);
-
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/api/inventory", {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch products:", error);
-    }
+  const getStatusBadge = (status: string) => {
+    const colors = {
+      "in-stock": "bg-green-100 text-green-800",
+      "low-stock": "bg-yellow-100 text-yellow-800",
+      "out-of-stock": "bg-red-100 text-red-800",
+    };
+    return <Badge className={colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800"}>{status.replace('-', ' ')}</Badge>;
   };
 
-  const getStatusBadge = (product: Product) => {
-    if (product.quantity === 0) return <Badge variant="destructive">Out of Stock</Badge>;
-    if (product.quantity <= product.reorderPoint) return <Badge variant="secondary">Low Stock</Badge>;
-    return <Badge variant="outline">In Stock</Badge>;
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSelectChange = (name: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -111,54 +101,30 @@ const Inventory = () => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const response = await fetch("http://localhost:5000/api/inventory", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+    // Simulate API call
+    setTimeout(() => {
+      const newProduct: Product = {
+        id: products.length + 1,
+        name: formData.name,
+        category: formData.category,
+        price: parseFloat(formData.price) || 0,
+        stock: parseInt(formData.stock) || 0,
+        sku: formData.sku,
+        status: parseInt(formData.stock) > 10 ? "in-stock" : parseInt(formData.stock) > 0 ? "low-stock" : "out-of-stock",
+        lastUpdated: new Date().toISOString().split('T')[0]
+      };
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to add product");
-      }
-
-      const newProduct = await response.json();
-      
-      toast({
-        title: "Success",
-        description: "Product added successfully!",
-      });
-
-      // Refresh products list
-      await fetchProducts();
-
-      // Reset form
+      setProducts(prev => [...prev, newProduct]);
       setFormData({
         name: "",
-        sku: "",
-        description: "",
-        price: "",
-        cost: "",
-        quantity: "",
-        reorderPoint: "",
         category: "",
-        barcode: ""
+        price: "",
+        stock: "",
+        sku: ""
       });
-
       setIsAddProductOpen(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add product",
-        variant: "destructive"
-      });
-    } finally {
       setLoading(false);
-    }
+    }, 1000);
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,6 +135,11 @@ const Inventory = () => {
     setSearchQuery("");
   };
 
+  const inStockProducts = products.filter(p => p.status === "in-stock");
+  const lowStockProducts = products.filter(p => p.status === "low-stock");
+  const outOfStockProducts = products.filter(p => p.status === "out-of-stock");
+  const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
+
   return (
     <DashboardLayout breadcrumbs={breadcrumbs}>
       <div className="space-y-6">
@@ -178,69 +149,52 @@ const Inventory = () => {
             <p className="text-muted-foreground">Track and manage your product inventory</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Upload className="h-4 w-4 mr-2" />
-              Import CSV
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export
+            <Button variant="outline">
+              <Package className="h-4 w-4 mr-2" />
+              Export Data
             </Button>
             <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                <Button className="bg-blue-600 hover:bg-blue-700">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Product
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
+              <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>Add New Product</DialogTitle>
                   <DialogDescription>
-                    Add a new product to your inventory. Fill in all required fields.
+                    Add a new product to your inventory.
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Product Name *</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        placeholder="Enter product name"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="sku">SKU *</Label>
-                      <Input
-                        id="sku"
-                        name="sku"
-                        value={formData.sku}
-                        onChange={handleInputChange}
-                        placeholder="Enter SKU"
-                        required
-                      />
-                    </div>
-                  </div>
-
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      name="description"
-                      value={formData.description}
+                    <Label htmlFor="name">Product Name</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="Enter product description"
-                      rows={3}
+                      placeholder="Enter product name"
+                      required
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Input
+                      id="category"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      placeholder="e.g., Beverages, Bakery, Dairy"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="price">Price *</Label>
+                      <Label htmlFor="price">Price ($)</Label>
                       <Input
                         id="price"
                         name="price"
@@ -252,26 +206,14 @@ const Inventory = () => {
                         required
                       />
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="cost">Cost *</Label>
+                      <Label htmlFor="stock">Stock Quantity</Label>
                       <Input
-                        id="cost"
-                        name="cost"
+                        id="stock"
+                        name="stock"
                         type="number"
-                        step="0.01"
-                        value={formData.cost}
-                        onChange={handleInputChange}
-                        placeholder="0.00"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="quantity">Quantity *</Label>
-                      <Input
-                        id="quantity"
-                        name="quantity"
-                        type="number"
-                        value={formData.quantity}
+                        value={formData.stock}
                         onChange={handleInputChange}
                         placeholder="0"
                         required
@@ -279,44 +221,15 @@ const Inventory = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="reorderPoint">Reorder Point</Label>
-                      <Input
-                        id="reorderPoint"
-                        name="reorderPoint"
-                        type="number"
-                        value={formData.reorderPoint}
-                        onChange={handleInputChange}
-                        placeholder="10"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="category">Category</Label>
-                      <Select value={formData.category} onValueChange={(value) => handleSelectChange("category", value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Beverages">Beverages</SelectItem>
-                          <SelectItem value="Food">Food</SelectItem>
-                          <SelectItem value="Supplies">Supplies</SelectItem>
-                          <SelectItem value="Electronics">Electronics</SelectItem>
-                          <SelectItem value="Clothing">Clothing</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
                   <div className="space-y-2">
-                    <Label htmlFor="barcode">Barcode</Label>
+                    <Label htmlFor="sku">SKU</Label>
                     <Input
-                      id="barcode"
-                      name="barcode"
-                      value={formData.barcode}
+                      id="sku"
+                      name="sku"
+                      value={formData.sku}
                       onChange={handleInputChange}
-                      placeholder="Enter barcode"
+                      placeholder="e.g., PROD-001"
+                      required
                     />
                   </div>
 
@@ -334,67 +247,68 @@ const Inventory = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-3">
+        {/* Inventory Stats */}
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Quick Actions</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
-                <ScanLine className="h-4 w-4 mr-2" />
-                Scan Barcode
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Search className="h-4 w-4 mr-2" />
-                Search Products
-              </Button>
+            <CardContent>
+              <div className="text-2xl font-bold">{products.length}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-blue-600">+{products.length}</span> items in inventory
+              </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Inventory Summary</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">In Stock</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Total Products:</span>
-                  <span className="font-medium">{products.length}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Total Value:</span>
-                  <span className="font-medium">${products.reduce((sum, p) => sum + (p.price * p.quantity), 0).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Low Stock Items:</span>
-                  <span className="font-medium text-blue-600">{products.filter(p => p.quantity <= p.reorderPoint).length}</span>
-                </div>
-              </div>
+              <div className="text-2xl font-bold">{inStockProducts.length}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-green-600">+{inStockProducts.length}</span> available items
+              </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Alerts</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 text-sm">
-                <div className="text-red-600">{products.filter(p => p.quantity === 0).length} items out of stock</div>
-                <div className="text-blue-600">{products.filter(p => p.quantity <= p.reorderPoint && p.quantity > 0).length} items below threshold</div>
-                <div className="text-muted-foreground">2 pending orders</div>
-              </div>
+              <div className="text-2xl font-bold">{lowStockProducts.length}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-yellow-600">+{lowStockProducts.length}</span> need restocking
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${totalValue.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-green-600">+12.5%</span> from last month
+              </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Products Table */}
+        {/* Products List */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Products ({filteredProducts.length})</CardTitle>
-                <CardDescription>Manage your inventory items</CardDescription>
+                <CardDescription>Manage your product inventory and stock levels</CardDescription>
               </div>
               <div className="flex gap-2">
                 <div className="relative">
@@ -428,10 +342,13 @@ const Inventory = () => {
                 filteredProducts.map((product) => (
                   <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Package className="h-6 w-6 text-blue-600" />
+                      </div>
                       <div>
                         <div className="font-medium">{product.name}</div>
+                        <div className="text-sm text-muted-foreground">{product.category}</div>
                         <div className="text-sm text-muted-foreground">SKU: {product.sku}</div>
-                        <div className="text-sm text-muted-foreground">Category: {product.category || 'Uncategorized'}</div>
                       </div>
                     </div>
 
@@ -441,15 +358,15 @@ const Inventory = () => {
                         <div className="text-xs text-muted-foreground">Price</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-medium">{product.quantity}</div>
+                        <div className="text-sm font-medium">{product.stock}</div>
                         <div className="text-xs text-muted-foreground">Stock</div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {getStatusBadge(product)}
+                        {getStatusBadge(product.status)}
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="ghost" size="sm">Edit</Button>
-                        <Button variant="ghost" size="sm">Delete</Button>
+                        <Button variant="ghost" size="sm">View</Button>
                       </div>
                     </div>
                   </div>

@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { authApi, ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Mail, Lock, Zap } from "lucide-react";
+import BackendStatus from "@/components/BackendStatus";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -32,19 +34,10 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Login failed");
-      }
+      console.log("Attempting to login with data:", formData);
+      
+      const data = await authApi.login(formData);
+      console.log("Login successful:", data);
 
       // Use AuthContext to store token and user data
       login(data.token, data.user);
@@ -52,7 +45,12 @@ const Login = () => {
       // Redirect to dashboard
       navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      console.error("Login error:", err);
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError("Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -81,6 +79,7 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <BackendStatus />
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive">

@@ -5,13 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Search, Mail, Star, Users, Phone, MapPin, X } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { Plus, Search, Mail, Phone, MapPin, User, X } from "lucide-react";
+import { useState } from "react";
 
 interface Customer {
   id: number;
@@ -19,73 +15,73 @@ interface Customer {
   email: string;
   phone: string;
   address: string;
-  isVip: boolean;
+  status: string;
   totalSpent: number;
-  visitCount: number;
+  lastPurchase: string;
   createdAt: string;
 }
 
 const Customers = () => {
   const breadcrumbs = [{ label: "Customers" }];
-  const { toast } = useToast();
-  const { token } = useAuth();
   const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([
+    {
+      id: 1,
+      name: "John Smith",
+      email: "john.smith@email.com",
+      phone: "+1 (555) 123-4567",
+      address: "123 Main St, City, State 12345",
+      status: "active",
+      totalSpent: 1250.00,
+      lastPurchase: "2024-01-15",
+      createdAt: "2024-01-01"
+    },
+    {
+      id: 2,
+      name: "Sarah Johnson",
+      email: "sarah.j@email.com",
+      phone: "+1 (555) 987-6543",
+      address: "456 Oak Ave, City, State 12345",
+      status: "active",
+      totalSpent: 890.50,
+      lastPurchase: "2024-01-10",
+      createdAt: "2024-01-05"
+    },
+    {
+      id: 3,
+      name: "Mike Davis",
+      email: "mike.d@email.com",
+      phone: "+1 (555) 456-7890",
+      address: "789 Pine Rd, City, State 12345",
+      status: "inactive",
+      totalSpent: 450.25,
+      lastPurchase: "2023-12-20",
+      createdAt: "2023-12-01"
+    }
+  ]);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    address: "",
-    isVip: false
+    address: ""
   });
 
-  // Load customers from backend
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
+  const filteredCustomers = customers.filter(customer =>
+    customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    customer.phone.includes(searchQuery)
+  );
 
-  // Filter customers based on search query
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredCustomers(customers);
-    } else {
-      const filtered = customers.filter(customer =>
-        customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        customer.phone.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredCustomers(filtered);
+  const getStatusBadge = (status: string) => {
+    if (status === "active") {
+      return <Badge className="bg-green-100 text-green-800">Active</Badge>;
     }
-  }, [searchQuery, customers]);
-
-  const fetchCustomers = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/api/customers", {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCustomers(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch customers:", error);
-    }
+    return <Badge variant="secondary">Inactive</Badge>;
   };
 
-  const getSegmentBadge = (isVip: boolean) => {
-    if (isVip) {
-      return <Badge className="bg-blue-100 text-blue-800">VIP</Badge>;
-    }
-    return <Badge variant="secondary">Regular</Badge>;
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -93,61 +89,34 @@ const Customers = () => {
     }));
   };
 
-  const handleCheckboxChange = (checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      isVip: checked
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const response = await fetch("http://localhost:5000/api/customers", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+    // Simulate API call
+    setTimeout(() => {
+      const newCustomer: Customer = {
+        id: customers.length + 1,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        status: "active",
+        totalSpent: 0,
+        lastPurchase: new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString().split('T')[0]
+      };
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to add customer");
-      }
-
-      const newCustomer = await response.json();
-      
-      toast({
-        title: "Success",
-        description: "Customer added successfully!",
-      });
-
-      // Refresh customers list to show the new customer
-      await fetchCustomers();
-
-      // Reset form
+      setCustomers(prev => [...prev, newCustomer]);
       setFormData({
         name: "",
         email: "",
         phone: "",
-        address: "",
-        isVip: false
+        address: ""
       });
-
       setIsAddCustomerOpen(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add customer",
-        variant: "destructive"
-      });
-    } finally {
       setLoading(false);
-    }
+    }, 1000);
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,9 +127,13 @@ const Customers = () => {
     setSearchQuery("");
   };
 
-  const vipCustomers = customers.filter(c => c.isVip);
-  const totalSpent = customers.reduce((sum, c) => sum + c.totalSpent, 0);
-  const averageSpent = customers.length > 0 ? totalSpent / customers.length : 0;
+  const activeCustomers = customers.filter(c => c.status === "active");
+  const totalRevenue = customers.reduce((sum, c) => sum + c.totalSpent, 0);
+  const newThisMonth = customers.filter(c => {
+    const createdDate = new Date(c.createdAt);
+    const now = new Date();
+    return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear();
+  }).length;
 
   return (
     <DashboardLayout breadcrumbs={breadcrumbs}>
@@ -168,12 +141,12 @@ const Customers = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-blue-600">Customer Management</h1>
-            <p className="text-muted-foreground">Manage customer relationships and loyalty</p>
+            <p className="text-muted-foreground">Manage your customer database and relationships</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline">
               <Mail className="h-4 w-4 mr-2" />
-              Send Campaign
+              Send Newsletter
             </Button>
             <Dialog open={isAddCustomerOpen} onOpenChange={setIsAddCustomerOpen}>
               <DialogTrigger asChild>
@@ -186,65 +159,57 @@ const Customers = () => {
                 <DialogHeader>
                   <DialogTitle>Add New Customer</DialogTitle>
                   <DialogDescription>
-                    Add a new customer to your database. Fill in the required information.
+                    Add a new customer to your database.
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name *</Label>
+                    <Label htmlFor="name">Full Name</Label>
                     <Input
                       id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="Enter customer's full name"
+                      placeholder="Enter full name"
                       required
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="customer@example.com"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        placeholder="(555) 123-4567"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="customer@example.com"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="+1 (555) 123-4567"
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="address">Address</Label>
-                    <Textarea
+                    <Input
                       id="address"
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
-                      placeholder="Enter customer's address"
-                      rows={3}
+                      placeholder="123 Main St, City, State 12345"
+                      required
                     />
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="isVip"
-                      checked={formData.isVip}
-                      onCheckedChange={handleCheckboxChange}
-                    />
-                    <Label htmlFor="isVip">Mark as VIP Customer</Label>
                   </div>
 
                   <DialogFooter>
@@ -262,54 +227,67 @@ const Customers = () => {
         </div>
 
         {/* Customer Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{customers.length}</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-blue-600">+{customers.length}</span> total customers
+                <span className="text-blue-600">+{newThisMonth}</span> new this month
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Spent</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
+              <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${averageSpent.toFixed(2)}</div>
+              <div className="text-2xl font-bold">{activeCustomers.length}</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-blue-600">+12%</span> from last month
+                <span className="text-green-600">+{activeCustomers.length}</span> engaged customers
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">VIP Customers</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{vipCustomers.length}</div>
+              <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-blue-600">+{vipCustomers.length}</span> VIP members
+                <span className="text-green-600">+12.5%</span> from last month
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Avg. Order Value</CardTitle>
+              <Phone className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${customers.length > 0 ? (totalRevenue / customers.length).toFixed(2) : "0.00"}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-blue-600">+8.2%</span> from last month
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Customer List */}
+        {/* Customers List */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Customers ({filteredCustomers.length})</CardTitle>
-                <CardDescription>Manage your customer database</CardDescription>
+                <CardDescription>Manage your customer relationships and data</CardDescription>
               </div>
               <div className="flex gap-2">
                 <div className="relative">
@@ -361,11 +339,11 @@ const Customers = () => {
                         <div className="text-xs text-muted-foreground">Total Spent</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-medium">{customer.visitCount}</div>
-                        <div className="text-xs text-muted-foreground">Visits</div>
+                        <div className="text-sm font-medium">{customer.lastPurchase}</div>
+                        <div className="text-xs text-muted-foreground">Last Purchase</div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {getSegmentBadge(customer.isVip)}
+                        {getStatusBadge(customer.status)}
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="ghost" size="sm">Edit</Button>
@@ -376,7 +354,7 @@ const Customers = () => {
                 ))
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  {searchQuery ? "No customers found matching your search." : "No customers in database."}
+                  {searchQuery ? "No customers found matching your search." : "No customers in the system."}
                 </div>
               )}
             </div>
