@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Mail, Lock, User, Building, Zap } from "lucide-react";
 import BackendStatus from "@/components/BackendStatus";
-import DeploymentTest from "@/components/DeploymentTest";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -117,7 +116,6 @@ const Register = () => {
           </CardHeader>
           <CardContent>
             <BackendStatus />
-            <DeploymentTest />
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
